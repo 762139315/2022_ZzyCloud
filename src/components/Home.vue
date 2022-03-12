@@ -103,7 +103,7 @@
               <i class="el-icon-document"></i>
               <span>定额编号库</span>
             </template>
-            <!-- 二级菜单 -->
+            <!-- 二级菜单1 -->
             <el-menu-item index="5-5-1">
               <template slot="title">
                 <i class="el-icon-document"></i>
