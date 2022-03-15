@@ -11,6 +11,10 @@ import 'element-ui/lib/theme-chalk/index.css'
 import './assets/css/global.css'
 // 引入阿里字体图标
 import './assets/iconfonts/iconfont.css'
+// 全局导入axios
+import axios from 'axios'
+axios.defaults.baseURL = 'http://192.168.2.252:10099'
+Vue.prototype.$http = axios
 Vue.use(ElementUI)
 Vue.use(less)
 Vue.config.productionTip = false

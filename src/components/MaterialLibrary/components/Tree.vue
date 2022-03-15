@@ -3,6 +3,7 @@
     <el-tree
       id="my-tree"
       ref="tree"
+      @node-click="handleNodeClick"
       class="tree-view structure-tree"
       :data="treeData"
       highlight-current
@@ -15,20 +16,20 @@
     >
       <span slot-scope="{ node, data }" class="custom-tree-node">
         <span class="tooltip">
-          <span class="add-f-s-14">{{ data.name }}</span>
+          <span class="add-f-s-14">{{ data.textName }}</span>
         </span>
         <div v-if="node.isCurrent == true" class="operation-view">
           <i
             class="small-operation-btn el-icon-plus"
-            @click.stop="handleAdd(data)"
+            @click.stop="handleAdd(treeData)"
           />
           <i
             class="small-operation-btn el-icon-edit "
-            @click.stop="handleEdit(data)"
+            @click.stop="handleEdit(treeData)"
           />
           <i
             class="small-operation-btn el-icon-delete"
-            @click.stop="handleDelete(data)"
+            @click.stop="handleDelete(treeData)"
           />
         </div>
       </span>
@@ -69,31 +70,25 @@ export default {
   },
 
   methods: {
-    // 添加新增按钮
-    handleAdd (data) {
-      this.$emit('addItem', data)
+    handleNodeClick (CurrentData) {
+      console.log(CurrentData)
+      window.localStorage.setItem('CurrentData', JSON.stringify(CurrentData))
     },
-
+    // 添加新增按钮
+    handleAdd (treeData) {
+      this.$emit('addItem', treeData)
+    },
     // 点击删除按钮
-    handleDelete (data) {
-      this.$emit('deleteItem', data)
+    handleDelete (treeData) {
+      this.$emit('deleteItem', treeData)
     },
 
     // 点击编辑按钮
-    handleEdit (data) {
-      this.selectItem = data
-      this.$emit('editItem', JSON.parse(JSON.stringify(data)))
+    handleEdit (treeData) {
+      this.selectItem = treeData
+      this.$emit('editItem', JSON.parse(JSON.stringify(treeData)))
+      // console.log('this.selectItem', this.treeEditItem)
     },
-
-    // ============== 组件内事件 结束=============
-
-    // ============== 父组件回调事件 开始=============
-
-    // 添加新记录，树形列表回显
-    treeAddItem (data) {
-      this.$refs.tree.append(data, data.parentId)
-    },
-
     // 删除节点
     treeDeleteItem (val) {
       this.$refs.tree.remove(val)
@@ -102,11 +97,9 @@ export default {
     // 修改记录，树形列表回显
     treeEditItem (val) {
       Object.assign(this.selectItem, val)
-      this.selectItem = {}
+      // this.selectItem = {}
+      console.log('this.selectItem', this.selectItem)
     }
-
-    // ============== 父组件回调事件 结束=============
-
   }
 }
 </script>

@@ -5,11 +5,16 @@
       <div class="Material_word">材质</div>
       <div class="MaterialLibrary_search">
         <el-input
+          v-model="searchName"
           suffix-icon="el-icon-search"
           placeholder="请输入材质名称"
         ></el-input>
-        <el-button class="cearch" type="primary">查询</el-button>
-        <el-button class="reset" type="info">重置</el-button>
+        <el-button @click="searchList" class="cearch" type="primary"
+          >查询</el-button
+        >
+        <el-button @click="resetSearch" class="reset" type="info"
+          >重置</el-button
+        >
       </div>
     </div>
     <!-- 材质视图区域 -->
@@ -24,7 +29,9 @@
           @deleteItem="deleteTreeItem"
           @editItem="editTreeItem"
         />
-        <div class="addClassification" @click="addNewRecord()">+添加一级分类</div>
+        <div class="addClassification" @click="addNewRecord()">
+          +添加一级分类
+        </div>
         <!-- 地点弹窗 -->
         <place-dialog
           ref="placeDialog"
@@ -48,86 +55,93 @@ export default {
     return {
       treeData: [],
       treeExpandAll: true,
-      treeNodeKey: 'id'
+      treeNodeKey: 'id',
+      searchName: '',
+      quertinfo: {},
+      mateName: '',
+      // 添加
+      AddQuertinfo: {
+        appearance: '',
+        comment: '',
+        deleted: '',
+        life: '',
+        mateId: '',
+        mateName: '',
+        parentMate: '',
+        parentMateId: '',
+        start: '',
+        warnFrequency: '',
+        warnType: '',
+        warnYear: ''
+      }
     }
   },
   created () {
     this.initTreeData()
+    // 查询一级菜单
+    this.getBasicMate()
   },
   methods: {
+    // 查询内容
+    searchList (treeData) {
+      this.$refs.placeDialog.openDialog(true, treeData)
+    },
+    async getBasicMate () {
+      const { data: res } = await this.$http.get('/cpsp/text/getBasicText', {
+        params: this.quertinfo
+      })
+      this.treeData = res.data
+    },
+    // 重置搜索内容
+    resetSearch () {
+      this.searchName = ''
+    },
     // 初始化列表
     initTreeData () {
       this.treeData = [
         {
-          children: [
-            {
-              children: [],
-              name: '油性漆',
-              desc: '这是油性漆',
-              parentId: '1',
-              id: '1'
-            },
-            {
-              children: [],
-              name: '水性漆',
-              desc: '这是水性漆',
-              parentId: '2',
-              id: '2'
-            },
-            {
-              children: [],
-              name: '功能性',
-              desc: '这是功能性',
-              parentId: '3',
-              id: '3'
-            }
-          ],
-          name: '涂料',
-          parentId: '',
-          id: '1'
-        },
-        // 油漆
-        {
-          name: '油漆',
-          parentId: '',
-          id: '2'
-        },
-        // 木漆
-        {
-          name: '木漆',
-          parentId: '',
-          id: '3'
-        },
-        {
-          name: '金属漆',
-          parentId: '',
-          id: '4'
-        },
-        {
-          name: '复合材质',
-          parentId: '',
-          id: '5'
+          appearance: '',
+          comment: '',
+          deleted: '',
+          life: '',
+          parentText: '',
+          parentTextId: '',
+          start: '',
+          textId: '',
+          textName: '',
+          warnFrequency: '',
+          warnType: '',
+          warnYear: ''
         }
       ]
     },
     // 添加新记录
-    addNewRecord () {
-      this.$refs.placeDialog.openDialog(false)
+    addNewRecord (treeData) {
+      this.$refs.placeDialog.resetFields()
+      this.$refs.placeDialog.openDialog(true, treeData)
     },
     // 新增表单数据
-    addData (data) {
+    addData () {
       // 新增树节点
-      this.$refs.customTree.treeAddItem(data)
+      this.treeAddItem()
+    },
+    // 添加新记录，树形列表回显
+    async treeAddItem (treeData) {
+      this.$refs.tree.append(treeData, treeData.parentTextId)
+      const { data: res } = await this.$http.post('/cpsp/mate/save', {params: this.AddQuertinfo})
+      console.log(res)
     },
     // 修改表单数据
-    editData (data) {
+    editData (treeData) {
+      console.log('editData', treeData)
       // 修改树节点
-      this.$refs.customTree.treeEditItem(data)
+      this.$refs.customTree.treeEditItem(treeData)
     },
     // 增加树节点
-    addTreeItem (data) {
+    addTreeItem (treeData) {
+      this.$refs.placeDialog.resetFields()
       // 打开地点弹窗，设置默认父级节点
-      this.$refs.placeDialog.openDialog(false, data.id)
+      this.$refs.placeDialog.openDialog(true, treeData)
     },
     // 删除树节点
     deleteTreeItem (data) {
@@ -141,26 +155,28 @@ export default {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
-        }).then(() => {
-        // 删除树节点
-          this.$refs.customTree.treeDeleteItem(data)
-          // 提示
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除'
-          })
         })
+          .then(() => {
+            // 删除树节点
+            this.$refs.customTree.treeDeleteItem(data)
+            // 提示
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            })
+          })
+          .catch(() => {
+            this.$message({
+              type: 'info',
+              message: '已取消删除'
+            })
+          })
       }
     },
     // 修改树节点
-    editTreeItem (data) {
+    editTreeItem (treeData) {
       // 打开地点编辑弹窗
-      this.$refs.placeDialog.openDialog(true, data.parentId, data)
+      this.$refs.placeDialog.openDialog(true, treeData)
     }
   }
 }
@@ -195,8 +211,8 @@ export default {
 .el-card {
   margin: 20px 0;
   .addClassification {
-     font-size: 14px;
-     margin: 20px;
+    font-size: 14px;
+    margin: 20px;
   }
 }
 </style>
